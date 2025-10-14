@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Zona Horaria Bogotá</title>
+</head>
+<body>
+    <h1>Prueba de Zona Horaria Bogotá</h1>
+    <button onclick="testBogotaTime()">Probar Hora de Bogotá</button>
+    <div id="results"></div>
+
+    <script>
+        function getBogotaTime() {
+            const now = new Date();
+
+            // Obtener fecha y hora en zona horaria de Bogotá
+            const bogotaTime = new Intl.DateTimeFormat('es-CO', {
+                timeZone: 'America/Bogota',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(now);
+
+            // Crear fecha legible para mostrar al usuario
+            const fechaLegible = new Intl.DateTimeFormat('es-ES', {
+                timeZone: 'America/Bogota',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).format(now);
+
+            // Crear timestamp en formato ISO pero con la hora de Bogotá
+            const [datePart, timePart] = bogotaTime.split(', ');
+            const [day, month, year] = datePart.split('/');
+            const [hour, minute, second] = timePart.split(':');
+            const bogotaDate = new Date(year, month - 1, day, hour, minute, second);
+
+            return {
+                timestampUTC: now.toISOString(),
+                timestampBogota: bogotaDate.toISOString(),
+                fechaLegible: fechaLegible,
+                zonaHoraria: 'America/Bogota'
+            };
+        }
+
+        function testBogotaTime() {
+            const tiempoBogota = getBogotaTime();
+            const resultsDiv = document.getElementById('results');
+
+            resultsDiv.innerHTML = `
+                <h2>Resultados de la prueba:</h2>
+                <p><strong>Hora del dispositivo (UTC):</strong> ${tiempoBogota.timestampUTC}</p>
+                <p><strong>Hora de Bogotá (ISO):</strong> ${tiempoBogota.timestampBogota}</p>
+                <p><strong>Fecha legible:</strong> ${tiempoBogota.fechaLegible}</p>
+                <p><strong>Zona horaria:</strong> ${tiempoBogota.zonaHoraria}</p>
+                <hr>
+                <h3>Datos que se enviarían al backend:</h3>
+                <pre>${JSON.stringify(tiempoBogota, null, 2)}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>
