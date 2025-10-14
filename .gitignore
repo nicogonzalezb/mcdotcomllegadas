@@ -7,3 +7,5 @@ config.js
 .env.production
 # Archivos de Google Sheets
 Registro_horas_mcdotcom.gsheet
+
+.DS_Store
