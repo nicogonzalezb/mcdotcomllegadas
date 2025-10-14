@@ -8,7 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>Registro de Llegada a Oficina</h1>
+        <h1 id="mainTitle">Registro de Entrada</h1>
+        <div class="mode-toggle" role="tablist" aria-label="Tipo de registro">
+            <button type="button" id="modeEntrada" class="mode-btn active" data-tipo="entrada" aria-selected="true">Entrada</button>
+            <button type="button" id="modeSalida" class="mode-btn" data-tipo="salida" aria-selected="false">Salida</button>
+        </div>
         <form id="registroForm">
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
@@ -16,7 +20,12 @@
             </div>
 
             <div class="form-group">
-                <label>Foto de llegada:</label>
+                <label for="cedula">Cédula:</label>
+                <input type="text" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]*" required>
+            </div>
+
+            <div class="form-group">
+                <label id="fotoLabel">Foto de entrada:</label>
                 <div class="camera-container">
                     <video id="video" autoplay playsinline></video>
                     <canvas id="canvas" style="display: none;"></canvas>
@@ -32,13 +41,13 @@
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn" disabled>Registrar Llegada</button>
+            <button type="submit" id="submitBtn" disabled>Registrar Entrada</button>
         </form>
 
         <div id="message" class="message" style="display: none;"></div>
     </div>
 
-    <script src="script.js?v=1"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
 

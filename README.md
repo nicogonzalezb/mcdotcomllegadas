@@ -15,6 +15,7 @@ Este sistema permite que las personas que llegan a la oficina se registren autom
 - `index.html`: Estructura HTML del formulario
 - `styles.css`: Estilos CSS para la interfaz
 - `script.js`: Lógica JavaScript para manejar la cámara y el envío
+- `config.sample.js`: Ejemplo de configuración para definir `window.ENV.WEBHOOK_URL`
 
 ## Cómo usar
 
@@ -23,7 +24,24 @@ Este sistema permite que las personas que llegan a la oficina se registren autom
 3. Haz clic en "Iniciar Cámara" para acceder a la cámara
 4. Una vez que aparezca el video, haz clic en "Tomar Foto"
 5. Si quieres cambiar la foto, puedes hacer clic en "Volver a Tomar"
-6. Finalmente, haz clic en "Registrar Llegada" para completar el registro
+6. Selecciona si es "Entrada" o "Salida"
+7. Finalmente, haz clic en "Registrar Entrada/Salida" para completar el registro
+
+## Configuración (webhook y variables)
+
+Este sitio estático usa un archivo `config.js` (no versionado) para inyectar variables en `window.ENV`.
+
+1. Copia `config.sample.js` a `config.js`.
+2. Asigna tu URL real del webhook de n8n a `window.ENV.WEBHOOK_URL`.
+3. Asegúrate de que `config.js` no se versiona (ya está en `.gitignore`).
+
+Ejemplo:
+
+```javascript
+window.ENV = {
+  WEBHOOK_URL: "https://tu-dominio-n8n/webhook/XXXXX"
+};
+```
 
 ## Datos que se registran
 
@@ -45,33 +63,20 @@ El sistema está configurado para registrar todas las horas en la zona horaria d
 - `fechaLegible`: Fecha y hora en formato legible en español
 - `zonaHoraria`: Indicador de zona horaria usada
 
-### Ejemplo de datos enviados:
+### Ejemplo de datos enviados al webhook:
 ```json
 {
+  "tipo": "entrada",
   "nombre": "Juan Pérez",
-  "foto": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...",
-  "timestampUTC": "2025-10-14T14:30:15.123Z",
-  "timestampBogota": "2025-10-14T09:30:15.123Z",
-  "fechaLegible": "14 de octubre de 2025, 09:30:15",
-  "zonaHoraria": "America/Bogota"
+  "timestamp": "2025-10-14T14:30:15.123Z",
+  "fotoBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...",
+  "userAgent": "Mozilla/5.0 ..."
 }
 ```
 
-## Implementación del backend
+## Backend (n8n)
 
-Actualmente, los datos se muestran en la consola del navegador. Para guardar los registros, necesitas implementar un backend que reciba los datos POST en formato JSON.
-
-Ejemplo de endpoint:
-```javascript
-// En script.js, reemplaza la línea comentada:
-// const response = await fetch('/api/registro', {
-//     method: 'POST',
-//     headers: {
-//         'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(registroData)
-// });
-```
+El frontend envía un POST `application/json` al webhook configurado en `WEBHOOK_URL`. En n8n, mapea los campos `tipo`, `nombre`, `timestamp` y `fotoBase64`. Si necesitas CORS, añade un nodo "Respond to Webhook" con `Access-Control-Allow-Origin: *` o configura `N8N_CORS_*`.
 
 ## Requisitos del navegador
 

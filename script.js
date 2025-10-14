@@ -1,6 +1,7 @@
 // Variables globales
 let videoStream = null;
 let capturedImageData = null;
+let registroTipo = 'entrada';
 
 // Elementos del DOM
 const video = document.getElementById('video');
@@ -13,12 +14,42 @@ const photoPreview = document.getElementById('photoPreview');
 const capturedImage = document.getElementById('capturedImage');
 const registroForm = document.getElementById('registroForm');
 const messageDiv = document.getElementById('message');
+const mainTitle = document.getElementById('mainTitle');
+const fotoLabel = document.getElementById('fotoLabel');
+const modeEntradaBtn = document.getElementById('modeEntrada');
+const modeSalidaBtn = document.getElementById('modeSalida');
+const WEBHOOK_URL = (window.ENV && window.ENV.WEBHOOK_URL)
+    ? window.ENV.WEBHOOK_URL
+    : 'https://n8ntest.nicogonzalez.xyz/webhook-test/c147ec91-6d71-43b6-b17a-bc3b98410f6d';
 
 // Event listeners
 startCameraBtn.addEventListener('click', startCamera);
 capturePhotoBtn.addEventListener('click', capturePhoto);
 retakePhotoBtn.addEventListener('click', retakePhoto);
 registroForm.addEventListener('submit', submitForm);
+if (modeEntradaBtn) {
+    modeEntradaBtn.addEventListener('click', () => setRegistroTipo('entrada'));
+}
+if (modeSalidaBtn) {
+    modeSalidaBtn.addEventListener('click', () => setRegistroTipo('salida'));
+}
+
+// Estado y UI del tipo de registro
+function setRegistroTipo(tipo) {
+    if (tipo !== 'entrada' && tipo !== 'salida') return;
+    registroTipo = tipo;
+    if (mainTitle) mainTitle.textContent = tipo === 'entrada' ? 'Registro de Entrada' : 'Registro de Salida';
+    if (fotoLabel) fotoLabel.textContent = tipo === 'entrada' ? 'Foto de entrada:' : 'Foto de salida:';
+    if (submitBtn) submitBtn.textContent = tipo === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida';
+    if (modeEntradaBtn && modeSalidaBtn) {
+        modeEntradaBtn.classList.toggle('active', tipo === 'entrada');
+        modeEntradaBtn.setAttribute('aria-selected', String(tipo === 'entrada'));
+        modeSalidaBtn.classList.toggle('active', tipo === 'salida');
+        modeSalidaBtn.setAttribute('aria-selected', String(tipo === 'salida'));
+    }
+}
+// Inicializar UI
+setRegistroTipo('entrada');
 
 // Función para iniciar la cámara
 async function startCamera() {
@@ -157,6 +188,7 @@ async function submitForm(event) {
     event.preventDefault();
 
     const nombre = document.getElementById('nombre').value.trim();
+    const cedula = document.getElementById('cedula') ? document.getElementById('cedula').value.trim() : '';
 
     if (!nombre) {
         showMessage('Por favor, ingresa tu nombre.', 'error');
@@ -168,35 +200,51 @@ async function submitForm(event) {
         return;
     }
 
-    // Obtener timestamp actual en hora de Bogotá
-    const tiempoBogota = getBogotaTime();
+    if (!cedula) {
+        showMessage('Por favor, ingresa tu cédula.', 'error');
+        return;
+    }
 
-    // Crear objeto con los datos
-    const registroData = {
+    // Obtener timestamp y datos para UI
+    const tiempoBogota = getBogotaTime();
+    const payload = {
+        tipo: registroTipo,
         nombre: nombre,
-        foto: capturedImageData,
-        timestampUTC: tiempoBogota.timestampUTC,
+        cedula: cedula,
+        timestamp: new Date().toISOString(),
         timestampBogota: tiempoBogota.timestampBogota,
         fechaLegible: tiempoBogota.fechaLegible,
-        zonaHoraria: tiempoBogota.zonaHoraria
+        zonaHoraria: tiempoBogota.zonaHoraria,
+        fotoBase64: capturedImageData,
+        userAgent: navigator.userAgent
     };
 
     try {
-        // Aquí puedes enviar los datos a un servidor
-        // Por ahora, solo mostraremos los datos en consola y un mensaje de éxito
-        console.log('Datos del registro:', registroData);
+        if (!WEBHOOK_URL) {
+            showMessage('Configuración inválida: falta ENV.WEBHOOK_URL', 'error');
+            return;
+        }
 
-        // Simular envío (aquí iría tu código para enviar a un backend)
-        // const response = await fetch('/api/registro', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(registroData)
-        // });
+        if (WEBHOOK_URL === 'MODO_PRUEBA_LOCAL') {
+            // Simular éxito local sin enviar
+            await new Promise(resolve => setTimeout(resolve, 500));
+        } else {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const responseText = await response.text().catch(() => '');
+                throw new Error(`Webhook respondió ${response.status} ${response.statusText}. ${responseText}`);
+            }
+        }
 
         // Mostrar mensaje de éxito
-        showMessage(`¡Registro exitoso! Bienvenido ${nombre}. Hora de llegada: ${registroData.fechaLegible}`, 'success');
+        const saludo = registroTipo === 'entrada' ? '¡Registro de entrada exitoso!' : '¡Registro de salida exitoso!';
+        showMessage(`${saludo} ${nombre}. Hora: ${tiempoBogota.fechaLegible}`, 'success');
 
         // Limpiar formulario
         registroForm.reset();
@@ -213,7 +261,7 @@ async function submitForm(event) {
 
     } catch (error) {
         console.error('Error al enviar el registro:', error);
-        showMessage('Error al enviar el registro. Inténtalo de nuevo.', 'error');
+        showMessage(`Error al enviar el registro: ${error.message}`,'error');
     }
 }
 
