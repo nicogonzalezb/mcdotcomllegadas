@@ -8,4 +8,7 @@ config.js
 # Archivos de Google Sheets
 Registro_horas_mcdotcom.gsheet
 
+# Carpeta de imágenes (registros de horas)
+imagenes/
+
 .DS_Store
