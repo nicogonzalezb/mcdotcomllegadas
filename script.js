@@ -146,18 +146,6 @@ function stopVideoStream() {
 function getBogotaTime() {
     const now = new Date();
 
-    // Obtener fecha y hora en zona horaria de Bogotá
-    const bogotaTime = new Intl.DateTimeFormat('es-CO', {
-        timeZone: 'America/Bogota',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    }).format(now);
-
     // Crear fecha legible para mostrar al usuario
     const fechaLegible = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Bogota',
@@ -169,15 +157,12 @@ function getBogotaTime() {
         second: '2-digit'
     }).format(now);
 
-    // Crear timestamp en formato ISO pero con la hora de Bogotá
-    const [datePart, timePart] = bogotaTime.split(', ');
-    const [day, month, year] = datePart.split('/');
-    const [hour, minute, second] = timePart.split(':');
-    const bogotaDate = new Date(year, month - 1, day, hour, minute, second);
+    // Obtener la hora de Bogotá en UTC (restando 5 horas a la hora UTC actual)
+    const bogotaTimeUTC = new Date(now.getTime() - (5 * 60 * 60 * 1000));
 
     return {
         timestampUTC: now.toISOString(),
-        timestampBogota: bogotaDate.toISOString(),
+        timestampBogota: bogotaTimeUTC.toISOString(),
         fechaLegible: fechaLegible,
         zonaHoraria: 'America/Bogota'
     };
