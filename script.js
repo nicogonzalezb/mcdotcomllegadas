@@ -3,10 +3,20 @@ let videoStream = null;
 let capturedImageData = null;
 let registroTipo = 'entrada';
 
-// Actualizar la página cada minuto para prevenir fraude temporal
+
+// Reinicia la sesión cada 60 segundos sin recargar toda la página
 setInterval(() => {
-    location.reload();
-}, 60000); // 60000 ms = 1 minuto
+    stopVideoStream(); // corta el acceso a la cámara
+    capturedImageData = null;
+    registroForm.reset();
+    photoPreview.style.display = 'none';
+    submitBtn.disabled = true;
+    startCameraBtn.style.display = 'inline-block';
+    capturePhotoBtn.style.display = 'none';
+    retakePhotoBtn.style.display = 'none';
+    video.style.display = 'none';
+    showMessage('Sesión reiniciada automáticamente por seguridad.', 'info');
+}, 60000);
 
 // Elementos del DOM
 const video = document.getElementById('video');
@@ -25,7 +35,7 @@ const modeEntradaBtn = document.getElementById('modeEntrada');
 const modeSalidaBtn = document.getElementById('modeSalida');
 const WEBHOOK_URL = (window.ENV && window.ENV.WEBHOOK_URL)
     ? window.ENV.WEBHOOK_URL
-    : 'https://n8ntest.nicogonzalez.xyz/webhook-test/c147ec91-6d71-43b6-b17a-bc3b98410f6d';
+    : 'https://n8ntest.nicogonzalez.xyz/webhook/c147ec91-6d71-43b6-b17a-bc3b98410f6d';
 
 // Event listeners
 startCameraBtn.addEventListener('click', startCamera);
