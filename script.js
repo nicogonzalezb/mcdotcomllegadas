@@ -3,6 +3,11 @@ let videoStream = null;
 let capturedImageData = null;
 let registroTipo = 'entrada';
 
+// Actualizar la página cada minuto para prevenir fraude temporal
+setInterval(() => {
+    location.reload();
+}, 60000); // 60000 ms = 1 minuto
+
 // Elementos del DOM
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -20,7 +25,7 @@ const modeEntradaBtn = document.getElementById('modeEntrada');
 const modeSalidaBtn = document.getElementById('modeSalida');
 const WEBHOOK_URL = (window.ENV && window.ENV.WEBHOOK_URL)
     ? window.ENV.WEBHOOK_URL
-    : 'https://n8ntest.nicogonzalez.xyz/webhook/c147ec91-6d71-43b6-b17a-bc3b98410f6d';
+    : 'https://n8ntest.nicogonzalez.xyz/webhook-test/c147ec91-6d71-43b6-b17a-bc3b98410f6d';
 
 // Event listeners
 startCameraBtn.addEventListener('click', startCamera);
