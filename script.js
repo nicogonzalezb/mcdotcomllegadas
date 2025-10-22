@@ -69,20 +69,21 @@ setRegistroTipo('entrada');
 // Función para iniciar la cámara
 async function startCamera() {
     try {
-        // Solicitar acceso a la cámara trasera si está disponible
+        // Solicitar acceso a la cámara frontal si está disponible
         const constraints = {
             video: {
-                facingMode: 'environment', // Cámara trasera
+                facingMode: 'user', // Cámara frontal
                 width: { ideal: 1280 },
                 height: { ideal: 720 }
             }
         };
 
-        // Si no hay cámara trasera, usar la delantera
+        // Si no hay cámara frontal, usar la trasera
         videoStream = await navigator.mediaDevices.getUserMedia(constraints)
             .catch(async () => {
                 return await navigator.mediaDevices.getUserMedia({
                     video: {
+                        facingMode: 'environment', // Cámara trasera como respaldo
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     }
